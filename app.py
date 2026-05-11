@@ -9,10 +9,12 @@ import datetime
 import msal
 from functools import wraps
 from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super-secret-family-key")
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -69,6 +71,7 @@ def authorized():
         session["user"] = result.get("id_token_claims")
         
         # Muttertag Special
+        user_email = session["user"].get("preferred_username", "")
         if user_email.lower() == "amyloreenbluem@gmail.com":
             session["show_mothers_day"] = True
             
